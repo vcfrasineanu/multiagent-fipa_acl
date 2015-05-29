@@ -1,6 +1,6 @@
 #include "conversation_monitor.h"
 #include <base/Logging.hpp>
-
+#include <boost/test/unit_test.hpp>
 namespace fipa {
 namespace acl {
 
@@ -135,6 +135,7 @@ std::vector<fipa::acl::ConversationID> ConversationMonitor::getActiveConversatio
 
     return activeConversations;
 }
+
 
 } // end namespace acl
 } // end namespace fipa

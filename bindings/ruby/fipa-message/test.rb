@@ -79,4 +79,35 @@ class FipaMessageTest < Test::Unit::TestCase
 
 	    assert_equal(msg.getPerformative, :inform)
 	end
+
+	def test_ConversationMonitor
+		selfAgent = "agent_0"
+		selfAgentId = AgentId.new(selfAgent)
+
+		monitor = ConversationMonitor.new (selfAgentId)
+		convPtr = monitor.startConversation("topic")
+		convPtr.setProtocol ("request")
+		#protocolpath = monitor.setProtocolPath()
+		
+		#setProtocolPath ("/home/vlad/Documents/Rock/multiagent/fipa_acl/configuration/protocols")
+		convPtr.setProtocolResourceDir("/home/vlad/Documents/Rock/multiagent/fipa_acl/configuration/protocols")
+		protocol = convPtr.getProtocol
+		id = convPtr.getConversationId
+		
+    	#std::string configurationPath = getProtocolPath();
+    	#StateMachineFactory::setProtocolResourceDir(configurationPath);
+
+		myMsg = ACLMessage.new
+		myMsg.setProtocol protocol
+		myMsg.setConversationID(id)
+		myMsg.setPerformative(:request)
+		monitor.getConversation(id)
+
+		monitor.updateConversation(myMsg)
+
+		monitor.getActiveConversations()
+		monitor.getOrCreateConversation(id)
+		monitor.removeConversation(id)
+		monitor.cleanup()		
+	end
 end

@@ -139,12 +139,14 @@ public:
     */
     std::vector<fipa::acl::ConversationID> getActiveConversations();
 
+
 private:
     AgentID mSelf;
 
     std::map<fipa::acl::ConversationID, ConversationPtr> mActiveConversations;
 
     boost::mutex mMutex;
+
 };
 
 } // end namespace acl

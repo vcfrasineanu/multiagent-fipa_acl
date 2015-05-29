@@ -31,6 +31,8 @@ Data_Type<AgentID> rb_cAgentID;
 Data_Type<UserdefParam> rb_cUserDefinedParameters;
 Data_Type<ConversationMonitor> rb_cConversationMonitor;
 Data_Type<Conversation> rb_cConversation;
+Data_Type<ConversationObservable> rb_cConversationObservable;
+Data_Type<ConversationObserver> rb_cConversationObserver;
 
 Enum<representation::Type> rb_eRepresentationType;
 
@@ -321,8 +323,32 @@ Object wrap_conversation_getConversationId(Object self)
     fipa::acl::ConversationID id = conversation->getConversationId();
     return String(id);
 }
-
-
+/*
+Object wrap_setProtocolResourceDir(Object self, String protocolPath)
+{
+  //Data_Object <distributed_service_directory_test> configuration(self,rb_cConversation);
+  char buffer[1024];
+  std::string str(buffer);
+  std::string executionDir = str.substr(0, str.rfind('/'));
+  std::string configurationPath = executionDir + "/../../../../configuration/protocols";
+  std::string configurationPath = getProtocolPath();
+  StateMachineFactory::setProtocolResourceDir(configurationPath);
+  //return configuration;
+}
+*/
+/*
+Object wrap_conversation_toString(Object self, const std::vector<fipa::acl::ACLMessage>& messages)
+{
+    std::string data;
+    //Data_Object<ACLMessage> message(self, rb_cConversation);
+    std::vector<fipa::acl::ACLMessage>::const_iterator cit = messages.begin();
+    for(; cit != messages.end(); ++cit)
+    {
+        data += cit->toString();
+        data += std::endl;
+    }
+    return data;
+}*/
 /*
 template<typename T>
 class Vector
@@ -464,16 +490,53 @@ void Init_fipamessage_ruby()
 
     rb_cConversationMonitor = define_class_under<ConversationMonitor>(rb_mFIPA, "ConversationMonitor")
         .define_constructor(Constructor<ConversationMonitor, const AgentID&>(), Arg("name"))
-        .define_method("updateConversation", &ConversationMonitor::updateConversation, Arg("message")) // ConversationPtr
-        .define_method("startConversation", &ConversationMonitor::startConversation, Arg("conversationID/topic")) //ConversationPtr
+        .define_method("updateConversation", &ConversationMonitor::updateConversation, Arg("message")) 
+        .define_method("startConversation", &ConversationMonitor::startConversation, Arg("conversationID/topic")) 
         .define_method("removeConversation", &ConversationMonitor::removeConversation, Arg("conversationID"))
-        .define_method("getConversation", &ConversationMonitor::getConversation, Arg("conversationID")) //ConversationPtr
+        .define_method("getConversation", &ConversationMonitor::getConversation, Arg("conversationID")) 
         .define_method("getOrCreateConversation", &ConversationMonitor::getOrCreateConversation, Arg("conversationID"))
-        .define_method("cleanup",&ConversationMonitor::cleanup)   // ConversationPtr
-        .define_method("getActiveConversations",&ConversationMonitor::getActiveConversations); // ConversationPtr
+        .define_method("cleanup",&ConversationMonitor::cleanup)   
+        .define_method("getActiveConversations",&ConversationMonitor::getActiveConversations); 
 
     rb_cConversation = define_class_under<Conversation>(rb_mFIPA, "Conversation")
+        .define_constructor(Constructor<Conversation, const std::string&>(), Arg("id"))
+        .define_method("setProtocol", &Conversation::setProtocol, Arg("protocol_name"))
         .define_method("getProtocol", &Conversation::getProtocol)
-        .define_method("getConversationID", &wrap_conversation_getConversationId)
+        .define_method("setContentLanguage", &Conversation::setContentLanguage, Arg("content_language"))
+        .define_method("getContentLanguage", &Conversation::getContentLanguage)
+        .define_method("setNumberOfSubConversations", &Conversation::setNumberOfSubConversations, Arg("amount"))
+        .define_method("update", &Conversation::update, Arg("message"))
+        .define_method("generateConversationID", &Conversation::generateConversationID, Arg("conversation_topic"))
+        .define_method("getMessages", &Conversation::getMessages)
+        .define_method("getLastMessage", &Conversation::getLastMessage)
+        .define_method("hasEnded", &Conversation::hasEnded)
+        .define_method("hasMessages", &Conversation::hasMessages)
+        .define_method("getOwner", &Conversation::getOwner)
+        .define_method("getConversationId", &wrap_conversation_getConversationId)
+        .define_method("setProtocolResourceDir", &StateMachineFactory::setProtocolResourceDir, Arg("protocolPath"))
+        //.define_method("toString", &wrap_conversation_toString)
         ;
+
+/*
+      rb_cConversationObservable = define_class_under<ConversationObservable>(rb_mFIPA, "ConversationObservable")
+        .define_constructor(Constructor<ConversationObservable>(), Arg("id"))
+        .define_method("setConversationId", &ConversationObservable::setConversationId, Arg("id"))
+        
+        .define_method("addObserver", &ConversationObservable::addObserver, Arg("observer"))
+        .define_method("removeObserver", &ConversationObservable::removeObserver, Arg("observer"))
+        .define_method("notify", &ConversationObservable::notify, Arg("message"))
+        .define_method("getStatus", &ConversationObservable::getStatus)
+        .define_method("getObservers", &ConversationObservable::getObservers)
+        .define_method("detachObservers", &ConversationObservable::detachObservers)
+        .define_method("hasObservers", &ConversationObservable::hasObservers)
+        ;
+
+
+      rb_cConversationObserver = define_class_under<ConversationObserver>(rb_mFIPA, "ConversationObserver")
+        .define_constructor(Constructor<ConversationObserver>())
+        .define_method("hasEvents", &ConversationObserver::hasEvents)
+        .define_method("waitForNextEvent", &ConversationObserver::waitForNextEvent)
+        .define_method("getNextEvent", &ConversationObserver::getNextEvent, Arg("message"))
+        .define_method("getConversationIdsOfObservables", &ConversationObserver::getConversationIdsOfObservables)
+        ;*/
 }
