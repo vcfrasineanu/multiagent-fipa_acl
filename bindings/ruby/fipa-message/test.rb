@@ -84,35 +84,38 @@ class FipaMessageTest < Test::Unit::TestCase
 		agent0 = "agent_0"
 		agent0Id = AgentId.new(agent0)
 		protocol = "request"
+		agent1 = "agent_1"
+		agent1Id = AgentId.new(agent1)
 		
 		monitor = ConversationMonitor.new (agent0Id)
-		convPtr = Conversation.new (agent0)
-		convPtr.setProtocol (protocol)
+		#convPtr = Conversation.new (agent0)
+		#id = convPtr.getConversationId
 
-		monitor.startConversation("topic")
+		convPtr = monitor.startConversation(agent0)
+		convPtr.setProtocol (protocol)
 		assert_equal(protocol,convPtr.getProtocol)
+		id = convPtr.getConversationId
 
 		convPtr.setProtocolResourceDir("../../../configuration/protocols")
-		id = convPtr.getConversationId
 
 		myMsg = ACLMessage.new
 		myMsg.setProtocol protocol
-		agent1 = "agent_1"
-		agent1Id = AgentId.new(agent1)
 		myMsg.setSender(agent1Id)
 		myMsg.setConversationID(id)
 		myMsg.setPerformative :request
 
 		assert_equal(false,convPtr.hasMessages)
 
-		monitor.getOrCreateConversation(id)
 		convPtr = monitor.updateConversation(myMsg)
 		assert_equal(true,convPtr.hasMessages)		
 
-		assert_equal(myMsg.to_s,(convPtr.getLastMessage).to_s)
-
-		monitor.getActiveConversations()
-		newConv = monitor.startConversation("new_topic")
+		assert_equal(myMsg.to_s,(convPtr.getLastMessage).to_s) 
+		
+		conversations = monitor.getActiveConversations()
+		assert_equal(id,conversations[0])		
+		
+		newConv = monitor.startConversation(agent1)
+		newConv.setProtocol (protocol)
 		new_id = newConv.getConversationId
 		
 		myMsg1 = ACLMessage.new
@@ -123,13 +126,23 @@ class FipaMessageTest < Test::Unit::TestCase
 		newConv = monitor.updateConversation(myMsg1)
 		assert_equal(myMsg1.to_s,(newConv.getLastMessage).to_s)
 
+		conversations = monitor.getActiveConversations()
+		assert_equal(nil,conversations[2])
+		#assert_equal(id,conversations[0])
+		#assert_equal(new_id,conversations[1])
+
 		assert_equal(true,monitor.removeConversation(new_id))
 
 		monitor.getOrCreateConversation(new_id)
+
 		assert_equal(true,monitor.removeConversation(new_id))
 		
 		assert_equal(true,monitor.removeConversation(id))
 		assert_equal(false,monitor.removeConversation(new_id))
+
+		conversations = monitor.getActiveConversations()
+		assert_equal(nil,conversations[0])
+
 		monitor.cleanup()		
 	end
 end
