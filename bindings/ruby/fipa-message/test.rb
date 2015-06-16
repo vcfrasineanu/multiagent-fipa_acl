@@ -80,34 +80,77 @@ class FipaMessageTest < Test::Unit::TestCase
 	    assert_equal(msg.getPerformative, :inform)
 	end
 
-	def test_ConversationMonitor
-		selfAgent = "agent_0"
-		selfAgentId = AgentId.new(selfAgent)
+	def test_Conversation
+		agent = "agent_0"
+		agentId = AgentId.new(agent)
+		protocol = "request"
+		language = "content_language"
 
-		monitor = ConversationMonitor.new (selfAgentId)
-		convPtr = monitor.startConversation("topic")
-		convPtr.setProtocol ("request")
-		#protocolpath = monitor.setProtocolPath()
+		conv = Conversation.new (agent)
+		conv.setProtocol (protocol)
+		conv.setContentLanguage (language)
+		conv.setProtocolResourceDir("../../../configuration/protocols")
+
+		assert_equal(protocol,conv.getProtocol)
+		assert_equal(language,conv.getContentLanguage)
+		assert_equal(agent,conv.getOwner)
+		assert_equal(false,conv.hasEnded)
+		assert_equal(false,conv.hasMessages)
+
+		id = conv.getConversationId
 		
-		#setProtocolPath ("/home/vlad/Documents/Rock/multiagent/fipa_acl/configuration/protocols")
-		convPtr.setProtocolResourceDir("/home/vlad/Documents/Rock/multiagent/fipa_acl/configuration/protocols")
-		protocol = convPtr.getProtocol
+		msg = ACLMessage.new
+		msg.setProtocol protocol
+		msg.setSender agentId
+		
+		#conv.update(msg)
+	end
+
+	def test_ConversationMonitor
+		agent0 = "agent_0"
+		agent0Id = AgentId.new(agent0)
+		protocol = "request"
+		
+		monitor = ConversationMonitor.new (agent0Id)
+		convPtr = Conversation.new (agent0)
+		convPtr.setProtocol (protocol)
+
+		monitor.startConversation("topic")
+		assert_equal(convPtr.getProtocol,protocol)
+
+		convPtr.setProtocolResourceDir("../../../configuration/protocols")
 		id = convPtr.getConversationId
-		
-    	#std::string configurationPath = getProtocolPath();
-    	#StateMachineFactory::setProtocolResourceDir(configurationPath);
 
 		myMsg = ACLMessage.new
 		myMsg.setProtocol protocol
+		agent1 = "agent_1"
+		agent1Id = AgentId.new(agent1)
+		myMsg.setSender(agent1Id)
 		myMsg.setConversationID(id)
-		myMsg.setPerformative(:request)
-		monitor.getConversation(id)
+		myMsg.setPerformative :request
 
-		monitor.updateConversation(myMsg)
-
-		monitor.getActiveConversations()
+		assert_equal(convPtr.hasMessages, false)
+		#convPtr.update(myMsg)
 		monitor.getOrCreateConversation(id)
-		monitor.removeConversation(id)
+		convPtr = monitor.updateConversation(myMsg)
+		assert_equal(convPtr.hasMessages, true)		
+
+		assert_equal((convPtr.getLastMessage).to_s,myMsg.to_s)
+
+		##monitor.getActiveConversations()
+		##newConv = Conversation.new(newAgent)
+		##newConv = monitor.startConversation("new_topic")
+		##new_id = newConv.getConversationId
+		
+		#newConv.update(myMsg)
+		#assert_equal(newConv.getLastMessage,myMsg)
+
+		##assert_equal(monitor.removeConversation(new_id),true)
+
+		##monitor.getOrCreateConversation(new_id)
+		##assert_equal(monitor.removeConversation(new_id),true)
+		
+		##assert_equal(monitor.removeConversation(id),true)
 		monitor.cleanup()		
 	end
 end
