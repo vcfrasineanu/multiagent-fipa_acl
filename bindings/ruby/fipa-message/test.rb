@@ -80,32 +80,6 @@ class FipaMessageTest < Test::Unit::TestCase
 	    assert_equal(msg.getPerformative, :inform)
 	end
 
-	def test_Conversation
-		agent = "agent_0"
-		agentId = AgentId.new(agent)
-		protocol = "request"
-		language = "content_language"
-
-		conv = Conversation.new (agent)
-		conv.setProtocol (protocol)
-		conv.setContentLanguage (language)
-		conv.setProtocolResourceDir("../../../configuration/protocols")
-
-		assert_equal(protocol,conv.getProtocol)
-		assert_equal(language,conv.getContentLanguage)
-		assert_equal(agent,conv.getOwner)
-		assert_equal(false,conv.hasEnded)
-		assert_equal(false,conv.hasMessages)
-
-		id = conv.getConversationId
-		
-		msg = ACLMessage.new
-		msg.setProtocol protocol
-		msg.setSender agentId
-		
-		#conv.update(msg)
-	end
-
 	def test_ConversationMonitor
 		agent0 = "agent_0"
 		agent0Id = AgentId.new(agent0)
@@ -116,7 +90,7 @@ class FipaMessageTest < Test::Unit::TestCase
 		convPtr.setProtocol (protocol)
 
 		monitor.startConversation("topic")
-		assert_equal(convPtr.getProtocol,protocol)
+		assert_equal(protocol,convPtr.getProtocol)
 
 		convPtr.setProtocolResourceDir("../../../configuration/protocols")
 		id = convPtr.getConversationId
@@ -129,28 +103,33 @@ class FipaMessageTest < Test::Unit::TestCase
 		myMsg.setConversationID(id)
 		myMsg.setPerformative :request
 
-		assert_equal(convPtr.hasMessages, false)
-		#convPtr.update(myMsg)
+		assert_equal(false,convPtr.hasMessages)
+
 		monitor.getOrCreateConversation(id)
 		convPtr = monitor.updateConversation(myMsg)
-		assert_equal(convPtr.hasMessages, true)		
+		assert_equal(true,convPtr.hasMessages)		
 
-		assert_equal((convPtr.getLastMessage).to_s,myMsg.to_s)
+		assert_equal(myMsg.to_s,(convPtr.getLastMessage).to_s)
 
-		##monitor.getActiveConversations()
-		##newConv = Conversation.new(newAgent)
-		##newConv = monitor.startConversation("new_topic")
-		##new_id = newConv.getConversationId
+		monitor.getActiveConversations()
+		newConv = monitor.startConversation("new_topic")
+		new_id = newConv.getConversationId
 		
-		#newConv.update(myMsg)
-		#assert_equal(newConv.getLastMessage,myMsg)
+		myMsg1 = ACLMessage.new
+		myMsg1.setProtocol protocol
+		myMsg1.setSender(agent0Id)
+		myMsg1.setConversationID(new_id)
+		myMsg1.setPerformative :request
+		newConv = monitor.updateConversation(myMsg1)
+		assert_equal(myMsg1.to_s,(newConv.getLastMessage).to_s)
 
-		##assert_equal(monitor.removeConversation(new_id),true)
+		assert_equal(true,monitor.removeConversation(new_id))
 
-		##monitor.getOrCreateConversation(new_id)
-		##assert_equal(monitor.removeConversation(new_id),true)
+		monitor.getOrCreateConversation(new_id)
+		assert_equal(true,monitor.removeConversation(new_id))
 		
-		##assert_equal(monitor.removeConversation(id),true)
+		assert_equal(true,monitor.removeConversation(id))
+		assert_equal(false,monitor.removeConversation(new_id))
 		monitor.cleanup()		
 	end
 end
