@@ -88,8 +88,6 @@ class FipaMessageTest < Test::Unit::TestCase
 		protocol = "request"
 
 		monitor = ConversationMonitor.new (agent0Id)
-		#convPtr = Conversation.new (agent0)
-		#id = convPtr.getConversationId
 
 		convPtr = monitor.startConversation("topic")
 		convPtr.setProtocol (protocol)
@@ -112,14 +110,8 @@ class FipaMessageTest < Test::Unit::TestCase
 		assert_equal(myMsg.to_s,(convPtr.getLastMessage).to_s) 
 		
 		conversations = monitor.getActiveConversations()
-		ok = false
-		for x in conversations
-			if x==id
-				ok = true
-			end
-		end
-		assert_equal(true,ok)
-		assert_equal(nil,conversations[1])		
+		assert_equal(true,conversations.include?(id))
+		assert_equal(1,conversations.size)		
 		
 		newConv = monitor.startConversation("new_topic")
 		newConv.setProtocol (protocol)
@@ -134,21 +126,10 @@ class FipaMessageTest < Test::Unit::TestCase
 		assert_equal(myMsg1.to_s,(newConv.getLastMessage).to_s)
 
 		conversations = monitor.getActiveConversations()
-		assert_equal(nil,conversations[2])
-		ok = false
-		for x in conversations
-			if x==id
-				ok = true
-			end
-		end
-		assert_equal(true,ok)
-		ok = false
-		for x in conversations
-			if x==new_id
-				ok = true
-			end
-		end
-		assert_equal(true,ok)
+		
+		assert_equal(2,conversations.size)
+		assert_equal(true,conversations.include?(id))
+		assert_equal(true,conversations.include?(new_id))
 
 		assert_equal(true,monitor.removeConversation(new_id))
 
