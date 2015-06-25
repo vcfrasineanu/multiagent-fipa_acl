@@ -127,7 +127,7 @@ class FipaMessageTest < Test::Unit::TestCase
 
 		conversations = monitor.getActiveConversations()
 		
-		assert_equal(2,conversations.size)
+		assert_equal(2, conversations.size)
 		assert_equal(true,conversations.include?(id))
 		assert_equal(true,conversations.include?(new_id))
 
