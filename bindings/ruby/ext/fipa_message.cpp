@@ -473,9 +473,9 @@ void Init_fipamessage_ruby()
 
 
     rb_cConversationMonitor = define_class_under<ConversationMonitor>(rb_mFIPA, "ConversationMonitor")
-        .define_constructor(Constructor<ConversationMonitor, const AgentID&>(), Arg("name"))
+        .define_constructor(Constructor<ConversationMonitor, const AgentID&>(), Arg("id"))
         .define_method("updateConversation", &ConversationMonitor::updateConversation, Arg("message")) 
-        .define_method("startConversation", &ConversationMonitor::startConversation, Arg("conversationID/topic")) 
+        .define_method("startConversation", &ConversationMonitor::startConversation, Arg("topic")) 
         .define_method("removeConversation", &ConversationMonitor::removeConversation, Arg("conversationID"))
         .define_method("getConversation", &ConversationMonitor::getConversation, Arg("conversationID")) 
         .define_method("getOrCreateConversation", &ConversationMonitor::getOrCreateConversation, Arg("conversationID"))

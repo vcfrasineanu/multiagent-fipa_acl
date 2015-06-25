@@ -132,7 +132,6 @@ std::vector<fipa::acl::ConversationID> ConversationMonitor::getActiveConversatio
     {
         activeConversations.push_back(it->first);
     }
-
     return activeConversations;
 }
 

@@ -83,15 +83,15 @@ class FipaMessageTest < Test::Unit::TestCase
 	def test_ConversationMonitor
 		agent0 = "agent_0"
 		agent0Id = AgentId.new(agent0)
-		protocol = "request"
 		agent1 = "agent_1"
 		agent1Id = AgentId.new(agent1)
-		
+		protocol = "request"
+
 		monitor = ConversationMonitor.new (agent0Id)
 		#convPtr = Conversation.new (agent0)
 		#id = convPtr.getConversationId
 
-		convPtr = monitor.startConversation(agent0)
+		convPtr = monitor.startConversation("topic")
 		convPtr.setProtocol (protocol)
 		assert_equal(protocol,convPtr.getProtocol)
 		id = convPtr.getConversationId
@@ -112,15 +112,22 @@ class FipaMessageTest < Test::Unit::TestCase
 		assert_equal(myMsg.to_s,(convPtr.getLastMessage).to_s) 
 		
 		conversations = monitor.getActiveConversations()
-		assert_equal(id,conversations[0])		
+		ok = false
+		for x in conversations
+			if x==id
+				ok = true
+			end
+		end
+		assert_equal(true,ok)
+		assert_equal(nil,conversations[1])		
 		
-		newConv = monitor.startConversation(agent1)
+		newConv = monitor.startConversation("new_topic")
 		newConv.setProtocol (protocol)
 		new_id = newConv.getConversationId
 		
 		myMsg1 = ACLMessage.new
 		myMsg1.setProtocol protocol
-		myMsg1.setSender(agent0Id)
+		myMsg1.setSender(agent1Id)
 		myMsg1.setConversationID(new_id)
 		myMsg1.setPerformative :request
 		newConv = monitor.updateConversation(myMsg1)
@@ -128,8 +135,20 @@ class FipaMessageTest < Test::Unit::TestCase
 
 		conversations = monitor.getActiveConversations()
 		assert_equal(nil,conversations[2])
-		#assert_equal(id,conversations[0])
-		#assert_equal(new_id,conversations[1])
+		ok = false
+		for x in conversations
+			if x==id
+				ok = true
+			end
+		end
+		assert_equal(true,ok)
+		ok = false
+		for x in conversations
+			if x==new_id
+				ok = true
+			end
+		end
+		assert_equal(true,ok)
 
 		assert_equal(true,monitor.removeConversation(new_id))
 
